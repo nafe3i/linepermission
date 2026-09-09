@@ -1,8 +1,8 @@
 package ma.youcode.lineperm.model;
 public class User{
 
-    private   String login;
-    private  String passwordHash;
+    private final    String login;
+    private  final  String passwordHash;
 
     public User(String login,String password) {
         this.login = login;
@@ -15,4 +15,3 @@ public class User{
         return passwordHash;
     }
 }
-way 
