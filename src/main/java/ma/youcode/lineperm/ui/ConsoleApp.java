@@ -1,11 +1,14 @@
 package ma.youcode.lineperm.ui;
 
 import java.util.Scanner;
+import ma.youcode.lineperm.model.FichierProtege;
+import ma.youcode.lineperm.service.FileService;
 import ma.youcode.lineperm.service.UserService;
 
 public class ConsoleApp {
 
     private UserService userService = new UserService();
+    private FileService fileService = new FileService();
     private String currentUser = null;
     private Scanner scanner = new Scanner(System.in);
 
@@ -31,7 +34,8 @@ public class ConsoleApp {
             }
 
             String command = scanner.nextLine().trim();
-            String[] commandClain = command.split("\\s+ ");
+            String[] commandClain = command.split("\\s+");
+            // System.out.println(commandClain[0] + "   ===  " + commandClain[1]);
 
             switch (commandClain[0]) {
                 case "signup":
@@ -53,6 +57,22 @@ public class ConsoleApp {
                 case "help":
                     handleHelp();
                     break;
+                // the cases of thesecond part.
+                case "ls":
+                    if (commandClain.length >= 2 && commandClain[1].equals("-l")) {
+                        showFiles();
+                    }
+                    break;
+                case "touch":
+                    if (commandClain.length >= 2) {
+                        createFile(commandClain[1], currentUser);
+                    }
+                    break;
+                case "cat":
+                    showFileContent(commandClain[1], currentUser);
+                    break;
+                case "nano":
+
                 case "":
                     break;
 
@@ -117,22 +137,68 @@ public class ConsoleApp {
         System.out.println("exit - Quitter l'application");
     }
 
-    // private void handleCommand(String command, String userLog) {
-    //     if (userLog == null) {
-    //         return;
-    //     }
-    //     switch (command) {
-    //         case "ls-l":
-    //             System.out.println("lister les fichiers");
-    //             break;
-    //         case "cat":
-    //             System.out.println("afficher le contenu d'un fichier");
-    //             break;
-    //         case "touch":
-    //             System.out.println("creer un fichier");
-    //             break;
-    //         default:
-    //            System.out.println("command non trouver");;
+    //second part .
+    private void showFiles() {
+        if (currentUser == null) {
+            System.out.println("Vous n'etes pas connecte.");
+            return;
+        }
+        fileService.shoWFile();
+        // System.out.println(".(salam el alam)");
+
+    }
+
+    private void createFile(String nameFile, String propFile) {
+        if (currentUser == null) {
+            System.out.println("Vous n'etes pas connecte.");
+            return;
+        }
+        // System.out.println("tu peux creer les fichier" + nameFile + "prop est " + propFile);
+        if (nameFile.trim() != null) {
+
+            String msg = fileService.create(nameFile, propFile);
+            System.out.println(msg);
+        }
+    }
+
+    private void showFileContent(String fileName) {
+        if (currentUser == null) {
+            System.out.println("Vous n'etes pas connecte.");
+            return;
+        }
+        fileService.showContentFile(fileName, currentUser);
+        // System.out.println("tu peux consulter le fichier" + command + "prop est " + propfile);
+    }
+
+    private void createcontent(String fileName) {
+        if (currentUser == null) {
+            System.out.println("Vous n'etes pas connecte.");
+            return;
+        }
+        fileService.writeContent(fileName, fileName, currentUser);
+    }
+
+    // private boolean checkAuth() {
+    //     if (currentUser == null) {
+    //         System.out.println("Vous n'etes pas connecte.");
     //     }
     // }
+// private void handleCommand(String command, String userLog) {
+//     if (userLog == null) {
+//         return;
+//     }
+//     switch (command) {
+//         case "ls-l":
+//             System.out.println("lister les fichiers");
+//             break;
+//         case "cat":
+//             System.out.println("afficher le contenu d'un fichier");
+//             break;
+//         case "touch":
+//             System.out.println("creer un fichier");
+//             break;
+//         default:
+//            System.out.println("command non trouver");;
+//     }
+// }
 }

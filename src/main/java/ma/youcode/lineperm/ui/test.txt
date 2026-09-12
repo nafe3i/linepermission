@@ -1,3 +1,5 @@
 spit("\\s+")
 
 is not equal to split(" ")
+
+getName()
