@@ -16,7 +16,7 @@ public class UserService {
 
     public UserService() {
         load();
-        System.out.println(users);
+        // System.out.println(users);
     }
 
     public String signUp(String login, String password) {
@@ -94,4 +94,8 @@ public class UserService {
             System.out.println("Erreur lors du chargement : " + e.getMessage());
         }
     }
+
+    // public User getUser(String login) {
+    //     return users.get(login);
+    // }
 }
