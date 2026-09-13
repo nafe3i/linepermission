@@ -1,7 +1,6 @@
 package ma.youcode.lineperm.ui;
 
 import java.util.Scanner;
-import ma.youcode.lineperm.model.FichierProtege;
 import ma.youcode.lineperm.service.FileService;
 import ma.youcode.lineperm.service.UserService;
 
@@ -21,9 +20,7 @@ public class ConsoleApp {
         // for (int i = 0; i < commands.length; i++) {
         //     System.out.println(c);
         // }
-        if (currentUser != null) {
-            System.out.println("logout");
-        }
+
         System.out.println();
 
         while (true) {
@@ -69,10 +66,20 @@ public class ConsoleApp {
                     }
                     break;
                 case "cat":
-                    showFileContent(commandClain[1], currentUser);
+                    if (commandClain.length >= 2) {
+                        showFileContent(commandClain[1], currentUser);
+                    }
                     break;
                 case "nano":
-
+                    if (commandClain.length >= 2) {
+                        createcontent(commandClain[1]);
+                    }
+                    break;
+                case "chmod":
+                    if (commandClain.length >= 3) {
+                        handleChmod(commandClain[1], commandClain[2]);
+                    }
+                    break;
                 case "":
                     break;
 
@@ -161,12 +168,13 @@ public class ConsoleApp {
         }
     }
 
-    private void showFileContent(String fileName) {
+    private void showFileContent(String fileName, String currentUser) {
         if (currentUser == null) {
             System.out.println("Vous n'etes pas connecte.");
             return;
         }
-        fileService.showContentFile(fileName, currentUser);
+        String resultat = fileService.showContentFile(fileName, currentUser, 'r');
+        System.out.println(resultat);
         // System.out.println("tu peux consulter le fichier" + command + "prop est " + propfile);
     }
 
@@ -175,9 +183,37 @@ public class ConsoleApp {
             System.out.println("Vous n'etes pas connecte.");
             return;
         }
-        fileService.writeContent(fileName, fileName, currentUser);
+        if (!fileService.canManipale(fileName, currentUser, 'w')) {
+
+            System.out.println("Vous n'avez pas la permission d'ecrire dans ce fichier.");
+            return;
+        }
+        StringBuilder contenu = new StringBuilder();
+        // fileService.writeContent(fileName, fileName, currentUser);
+        while (true) {
+            String ligne = scanner.nextLine();
+            if (ligne.equals("EOF")) {
+                break;
+            }
+            contenu.append(ligne).append(System.lineSeparator());
+        }
+
+        String resultat = fileService.writeContent(fileName, contenu.toString(), currentUser);
+        System.out.println(resultat);
     }
 
+    private void handleChmod(String droitArg, String fileName) {
+        if (currentUser == null) {
+            System.out.println("Vous n'etes pas connecte.");
+            return;
+        }
+
+        boolean accorder = !droitArg.startsWith("-");
+        char droit = accorder ? droitArg.charAt(0) : droitArg.charAt(1);
+
+        String resultat = fileService.chmod(fileName, droit, accorder, currentUser);
+        System.out.println(resultat);
+    }
     // private boolean checkAuth() {
     //     if (currentUser == null) {
     //         System.out.println("Vous n'etes pas connecte.");

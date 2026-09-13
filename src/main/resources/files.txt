@@ -1,1 +1,3 @@
 test.txt:amine,true,true,true,false,false,false
+test.txt:amine,true,true,true,false,false,false
+test.txt:amine,true,true,true,true,false,false

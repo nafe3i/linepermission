@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.List;
+import ma.youcode.lineperm.access.ControleAcces;
 import ma.youcode.lineperm.model.FichierProtege;
 
 public class FileService {
@@ -56,110 +57,91 @@ public class FileService {
         for (FichierProtege val : dataFiles.values()) {
             // String key = entry.getKey();
             // FichierProtege val = entry.getValue();
-            if (val.isOtherWrite()) {
-                otherWrite = 'w';
-            } else {
-                otherWrite = '-';
-            }
-            if (val.isOtherReade()) {
-                otherReade = 'r';
-            } else {
-                otherReade = '-';
-            }
-            if (val.isOtherDelete()) {
-                otherDelete = 'd';
-            } else {
-                otherDelete = '-';
-            }
+            otherReade = val.isOtherReade() ? 'r' : '-';
+            otherWrite = val.isOtherWrite() ? 'w' : '-';
+            otherDelete = val.isOtherDelete() ? 'd' : '-';
 
+            // if (val.isOtherWrite()) {
+            //     otherWrite = 'w';
+            // } else {
+            //     otherWrite = '-';
+            // }
+            // if (val.isOtherReade()) {
+            //     otherReade = 'r';
+            // } else {
+            //     otherReade = '-';
+            // }
+            // if (val.isOtherDelete()) {
+            //     otherDelete = 'd';
+            // } else {
+            //     otherDelete = '-';
+            // }
             System.out.println("rwd|" + otherReade + otherWrite + otherDelete + "   -   " + val.getOwner() + "  -  " + val.getName());
         }
 
     }
 
-    public void showContentFile(String fileName, String currenteUser) {
+    public String showContentFile(String fileName, String currenteUser, char command) {
         Path fullPath = dataFolder.resolve(fileName);
 
         if (!dataFiles.containsKey(fileName)) {
-            System.out.println("Le fichier n'existe pas.");
-            return;
-        }
-        FichierProtege fichierProtege = dataFiles.get(fileName);
-        if (fichierProtege.getOwner().equals(currenteUser)) {
-            try {
-                String contenu = Files.readString(fullPath);
-                System.out.println(contenu);
-            } catch (IOException e) {
-                System.err.println("Erreur de lecture du fichier : " + e.getMessage());
-            }
-        } else if (!fichierProtege.getOwner().equals(currenteUser) && fichierProtege.isOtherReade() == true) {
 
+            return "Le fichier n'existe pas.";
+            // return;
+        }
+        // FichierProtege fichierProtege = dataFiles.get(fileName);
+        if (canManipale(fileName, currenteUser, command)) {
             try {
                 String contenu = Files.readString(fullPath);
-                System.out.println(contenu);
+                return contenu;
             } catch (IOException e) {
-                System.err.println("Erreur de lecture du fichier : " + e.getMessage());
+                return "Erreur de lecture du fichier : " + e.getMessage();
             }
+            // } else if (!fichierProtege.getOwner().equals(currenteUser) && fichierProtege.isOtherReade() == true) {
+
+            //     try {
+            //         String contenu = Files.readString(fullPath);
+            //         System.out.println(contenu);
+            //     } catch (IOException e) {
+            //         System.err.println("Erreur de lecture du fichier : " + e.getMessage());
+            //     }
         } else {
-            System.out.println("Vous n'avez pas la permission de lire ce fichier.");
+            return "Vous n'avez pas la permission de lire ce fichier.";
         }
     }
 
-    // public void writeContent(String fileName, String currenteUser) {
-    //    Path fullPath = dataFolder.resolve(fileName);
-    //     if (!dataFiles.containsKey(fileName)) {
-    //         System.out.println("Le fichier n'existe pas.");
-    //         return;
-    //     }
-    //     FichierProtege fichierProtege = dataFiles.get(fileName);
-    //     if (fichierProtege.getOwner().equals(currenteUser)) {
-    //         try {
-    //             Files.write(fullPath, bytes, options);
-    //             // System.out.println(contenu);
-    //         } catch (IOException e) {
-    //             System.err.println("Erreur de lecture du fichier : " + e.getMessage());
-    //         }
-    //     } else if (!fichierProtege.getOwner().equals(currenteUser) && fichierProtege.isOtherWrite()==true) {
-    //         try {
-    //             String contenu = Files.readString(fullPath);
-    //             System.out.println(contenu);
-    //         } catch (IOException e) {
-    //             System.err.println("Erreur de lecture du fichier : " + e.getMessage());
-    //         }
-    //     } else {
-    //         System.out.println("Vous n'avez pas la permission de lire ce fichier.");
-    //     }
-    // }
-    public void writeContent(String fileName, String content, String currentUser) {
+    public String writeContent(String fileName, String content, String currentUser) {
+
         FichierProtege fichier = dataFiles.get(fileName);
         if (fichier == null) {
-            System.out.println("Le fichier n'existe pas.");
-            return;
+            return "Le fichier n'existe pas.";
+            // return msg;
         }
-
-        if (fichier.getOwner().equals(currentUser)) {
-            try {
-                Path fullPath = dataFolder.resolve(fileName);
-                Files.writeString(fullPath, content + System.lineSeparator(),
-                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                System.out.println("Contenu écrit avec succès.");
-            } catch (IOException e) {
-                System.err.println("Erreur lors de l'écriture : " + e.getMessage());
-            }
-        } else if (!fichier.getOwner().equals(currentUser) && fichier.isOtherWrite()) {
-            try {
-                Path fullPath = dataFolder.resolve(fileName);
-                Files.writeString(fullPath, content + System.lineSeparator(),
-                        StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                System.out.println("Contenu ecrit avec succes.");
-            } catch (IOException e) {
-                System.err.println("Erreur lors de l'ecriture : " + e.getMessage());
-            }
-        } else {
-            System.out.println("Vous n'avez pas la permission d'ecrire dans ce fichier.");
+        if (!ControleAcces.estAutorise(currentUser, fichier, 'w')) {
+            return "Vous n'avez pas la permission d'ecrire dans ce fichier.";
         }
+        // if (fichier.getOwner().equals(currentUser)) {
+        //     try {
+        //         Path fullPath = dataFolder.resolve(fileName);
+        //         Files.writeString(fullPath, content + System.lineSeparator(),
+        //                 StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        //         msg = "Contenu écrit avec succès.";
+        //     } catch (IOException e) {
+        //         System.err.println("Erreur lors de l'écriture : " + e.getMessage());
+        //     }
+        // } else if (!fichier.getOwner().equals(currentUser) && fichier.isOtherWrite()) {
+        try {
+            Path fullPath = dataFolder.resolve(fileName);
+            Files.writeString(fullPath, content + System.lineSeparator(),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return "Contenu ecrit avec succes.";
+        } catch (IOException e) {
+            return "Erreur lors de l'ecriture : " + e.getMessage();
+        }
+        // } else {
+        //     System.out.println("Vous n'avez pas la permission d'ecrire dans ce fichier.");
+        // }
     }
-    
 
     private void load() {
         try {
@@ -191,5 +173,43 @@ public class FileService {
         } catch (IOException e) {
             System.out.println("Erreur lors de la sauvegarde : " + e.getMessage());
         }
+    }
+
+    public boolean canManipale(String fileName, String currentUser, char command) {
+        FichierProtege fichier = dataFiles.get(fileName);
+        if (fichier == null) {
+            return false;
+        }
+        return ControleAcces.estAutorise(currentUser, fichier, command);
+    }
+
+    public String chmod(String fileName, char droit, boolean accorder, String currentUser) {
+        FichierProtege fichier = dataFiles.get(fileName);
+        if (fichier == null) {
+            return "Le fichier n'existe pas.";
+        }
+
+        if (!fichier.getOwner().equals(currentUser)) {
+            return "Permission denied.";
+        }
+
+        switch (droit) {
+            case 'r':
+                fichier.setOtherReade(accorder);
+                break;
+            case 'w':
+                fichier.setOtherWrite(accorder);
+                break;
+            case 'd':
+                fichier.setOtherDelete(accorder);
+                break;
+            default:
+                return "Droit invalide.";
+        }
+
+        save(fichier);
+
+        String action = accorder ? "accorde" : "retire";
+        return "Droit " + droit + " " + action + " pour les autres sur " + fileName + ".";
     }
 }
